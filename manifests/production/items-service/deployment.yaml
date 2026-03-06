@@ -31,9 +31,35 @@ spec:
         - containerPort: 80
         env:
         - name: APP_VERSION
-          value: "1.0.0"
+          valueFrom: 
+            configMapKeyRef:
+              name: items-service-config
+              key : APP_VERSION
         - name: ENVIRONMENT
-          value: "production"
+          valueFrom: 
+            configMapKeyRef:
+              name: items-service-config
+              key : ENVIRONMENT
+        - name: LOG_LEVEL
+          valueFrom: 
+            configMapKeyRef:
+              name: items-service-config
+              key : LOG_LEVEL
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name : items-service-secret
+              key : DB_USERNAME
+        - name : API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: items-service-secret
+              key: API_KEY
+        # Mount the entire ConfigMap as environment variables at once
+        # Cleaner when you want ALL keys from a ConfigMap
+          envFrom:
+          - configMapRef:
+              name: items-service-config
         resources:
           requests:
             memory: "64Mi"
