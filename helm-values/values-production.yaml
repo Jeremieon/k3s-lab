@@ -1,0 +1,17 @@
+global:
+  environment: production
+
+itemsService:
+  replicaCount: 2
+  image:
+    tag: "1.0.0"
+  config:
+    LOG_LEVEL: "info"
+
+gatewayService:
+  replicaCount: 2
+  image:
+    tag: "1.0.0"
+  config:
+    LOG_LEVEL: "info"
+    TIMEOUT_SECONDS: "5"

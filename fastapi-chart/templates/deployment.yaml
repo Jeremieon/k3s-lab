@@ -1,0 +1,119 @@
+{{- if .Values.itemsService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.itemsService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.itemsService.name }}
+    environment: {{ .Values.global.environment }}
+    version: {{ .Values.itemsService.image.tag | quote }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.itemsService.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.itemsService.name }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.itemsService.name }}
+        environment: {{ .Values.global.environment }}
+        version: {{ .Values.itemsService.image.tag | quote }}
+    spec:
+      containers:
+      - name: {{ .Values.itemsService.name }}
+        image: "{{ .Values.itemsService.image.repository }}:{{ .Values.itemsService.image.tag }}"
+        imagePullPolicy: {{ .Values.itemsService.image.pullPolicy }}
+        ports:
+        - containerPort: 80
+        envFrom:
+        - configMapRef:
+            name: items-service-config
+        resources:
+          requests:
+            memory: {{ .Values.itemsService.resources.requests.memory | quote }}
+            cpu: {{ .Values.itemsService.resources.requests.cpu | quote }}
+          limits:
+            memory: {{ .Values.itemsService.resources.limits.memory | quote }}
+            cpu: {{ .Values.itemsService.resources.limits.cpu | quote }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.itemsService.probes.liveness.path }}
+            port: 80
+          initialDelaySeconds: {{ .Values.itemsService.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.itemsService.probes.liveness.periodSeconds }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.itemsService.probes.readiness.path }}
+            port: 80
+          initialDelaySeconds: {{ .Values.itemsService.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.itemsService.probes.readiness.periodSeconds }}
+{{- end }}
+
+{{- if .Values.gatewayService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.gatewayService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.gatewayService.name }}
+    environment: {{ .Values.global.environment }}
+    version: {{ .Values.gatewayService.image.tag | quote }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.gatewayService.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.gatewayService.name }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.gatewayService.name }}
+        environment: {{ .Values.global.environment }}
+        version: {{ .Values.gatewayService.image.tag | quote }}
+    spec:
+      containers:
+      - name: {{ .Values.gatewayService.name }}
+        image: "{{ .Values.gatewayService.image.repository }}:{{ .Values.gatewayService.image.tag }}"
+        imagePullPolicy: {{ .Values.gatewayService.image.pullPolicy }}
+        ports:
+        - containerPort: 80
+        envFrom:
+        - configMapRef:
+            name: gateway-service-config
+        resources:
+          requests:
+            memory: {{ .Values.gatewayService.resources.requests.memory | quote }}
+            cpu: {{ .Values.gatewayService.resources.requests.cpu | quote }}
+          limits:
+            memory: {{ .Values.gatewayService.resources.limits.memory | quote }}
+            cpu: {{ .Values.gatewayService.resources.limits.cpu | quote }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.gatewayService.probes.liveness.path }}
+            port: 80
+          initialDelaySeconds: {{ .Values.gatewayService.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.gatewayService.probes.liveness.periodSeconds }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.gatewayService.probes.readiness.path }}
+            port: 80
+          initialDelaySeconds: {{ .Values.gatewayService.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.gatewayService.probes.readiness.periodSeconds }}
+{{- end }}

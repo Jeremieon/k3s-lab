@@ -1,0 +1,38 @@
+{{- if .Values.itemsService.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: items-service-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: items-service
+    environment: {{ .Values.global.environment }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  ENVIRONMENT: {{ .Values.global.environment | quote }}
+  {{- range $key, $value := .Values.itemsService.config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}
+
+{{- if .Values.gatewayService.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-service-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: gateway-service
+    environment: {{ .Values.global.environment }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  ENVIRONMENT: {{ .Values.global.environment | quote }}
+  ITEMS_SERVICE_URL: "http://items-service.{{ .Release.Namespace }}.svc.cluster.local"
+  {{- range $key, $value := .Values.gatewayService.config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}

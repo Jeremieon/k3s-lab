@@ -1,0 +1,9 @@
+apiVersion: v2
+name: fastapi-chart
+description: FastAPI microservices - items-service and gateway-service
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+maintainers:
+  - name: jeremy
+    email: jeremy@lab.local

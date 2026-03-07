@@ -1,0 +1,41 @@
+{{- if .Values.itemsService.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.itemsService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.itemsService.name }}
+    environment: {{ .Values.global.environment }}
+spec:
+  type: {{ .Values.itemsService.service.type }}
+  selector:
+    app: {{ .Values.itemsService.name }}
+  ports:
+  - name: http
+    port: {{ .Values.itemsService.service.port }}
+    targetPort: 80
+    protocol: TCP
+{{- end }}
+
+{{- if .Values.gatewayService.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.gatewayService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.gatewayService.name }}
+    environment: {{ .Values.global.environment }}
+spec:
+  type: {{ .Values.gatewayService.service.type }}
+  selector:
+    app: {{ .Values.gatewayService.name }}
+  ports:
+  - name: http
+    port: {{ .Values.gatewayService.service.port }}
+    targetPort: 80
+    protocol: TCP
+{{- end }}
