@@ -1,0 +1,17 @@
+global:
+  environment: staging
+
+itemsService:
+  replicaCount: 1
+  image:
+    tag: "1.0.0"
+  config:
+    LOG_LEVEL: "info"
+
+gatewayService:
+  replicaCount: 1
+  image:
+    tag: "1.0.0"
+  config:
+    LOG_LEVEL: "info"
+    TIMEOUT_SECONDS: "5"

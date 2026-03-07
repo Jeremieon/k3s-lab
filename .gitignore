@@ -1,2 +1,23 @@
+# Secrets — never commit these
 *-secret.yaml
 *-secrets.yaml
+secrets/
+
+# Helm
+*.tgz
+fastapi-chart/charts/
+
+# Local overrides
+values-local.yaml
+values-override.yaml
+
+# OS junk
+.DS_Store
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
