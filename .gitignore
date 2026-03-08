@@ -21,3 +21,9 @@ __pycache__/
 *.pyc
 .env
 venv/
+nginx-plus
+*.jwt
+*.key
+*.crtnginx-plus-default-values.yaml
+nginx-plus.jwt
+nginx-plus-default-values.yaml

@@ -1,0 +1,51 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: fastapi-vs
+  namespace: production
+spec:
+  # This hostname — add it to your /etc/hosts on your workstation
+  host: fastapi.lab.local
+  ingressClassName: nginx
+
+  # Upstream definitions — maps directly to NGINX upstream blocks
+  upstreams:
+  - name: gateway
+    service: gateway-service
+    port: 80
+    # Active health checks — NGINX Plus only feature
+    healthCheck:
+      enable: true
+      path: /health
+      interval: 5s
+      jitter: 1s
+      fails: 3
+      passes: 2
+
+  - name: items
+    service: items-service
+    port: 80
+    healthCheck:
+      enable: true
+      path: /health
+      interval: 5s
+      fails: 3
+      passes: 2
+
+  # Routing rules
+  routes:
+  - path: /
+    action:
+      pass: gateway
+
+  - path: /catalog
+    action:
+      pass: gateway
+
+  - path: /items
+    action:
+      pass: items
+
+  - path: /health
+    action:
+      pass: gateway

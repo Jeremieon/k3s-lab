@@ -1,0 +1,68 @@
+controller:
+  # Switch to NGINX Plus
+  nginxplus: true
+
+  # Image from F5 private registry
+  image:
+    repository: private-registry.nginx.com/nginx-ic/nginx-plus-ingress
+    tag: "5.3.4"
+    pullPolicy: IfNotPresent
+
+  # Use the registry pull secret we created
+  serviceAccount:
+    imagePullSecretName: regcred
+
+  # Licence secret
+  mgmt:
+    licenseTokenSecretName: nginx-plus-license
+
+  # Enable NGINX Plus CRDs (VirtualServer, VirtualServerRoute, Policy etc.)
+  enableCustomResources: true
+
+  # Enable the NGINX Plus live activity dashboard
+  nginxStatus:
+    enable: true
+    port: 8080
+    allowCidrs: "0.0.0.0/0"
+
+  # Enable Prometheus metrics endpoint (ready for Phase 4)
+  prometheus:
+    create: true
+    port: 9113
+
+  # 2 replicas for HA across your worker nodes
+  replicaCount: 2
+
+  # Resource limits
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  # Service — MetalLB will assign an external IP
+  service:
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+
+  # IngressClass name — used in your Ingress/VirtualServer resources
+  ingressClass:
+    name: nginx
+    create: true
+    setAsDefaultIngress: true
+
+  # Global NGINX settings
+  config:
+    entries:
+      # Structured JSON access logs — ready for Loki in Phase 4
+      log-format: |
+        {"time":"$time_iso8601","remote_addr":"$remote_addr",
+        "method":"$request_method","uri":"$request_uri",
+        "status":"$status","bytes_sent":"$bytes_sent",
+        "request_time":"$request_time","upstream_addr":"$upstream_addr",
+        "upstream_response_time":"$upstream_response_time"}
+      # Keep-alive tuning
+      upstream-keepalive-connections: "32"
+      upstream-keepalive-time: "1h"
