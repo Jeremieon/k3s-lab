@@ -1,0 +1,33 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: gateway-vs
+  namespace: production
+spec:
+  host: gateway.lab.local
+  ingressClassName: nginx
+
+  tls:
+    secret: fastapi-lab-tls
+    redirect:
+      enable: true
+      code: 301
+
+  policies:
+  - name: rate-limit-standard
+
+  upstreams:
+  - name: gateway
+    service: gateway-service
+    port: 80
+    healthCheck:
+      enable: true
+      path: /health
+      interval: 5s
+      fails: 3
+      passes: 2
+
+  routes:
+  - path: /
+    action:
+      pass: gateway

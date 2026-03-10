@@ -1,0 +1,10 @@
+apiVersion: k8s.nginx.org/v1
+kind: Policy
+metadata:
+  name: jwt-auth
+  namespace: production
+spec:
+  jwt:
+    realm: "Lab API"
+    secret: jwt-secret
+    token: $http_token   # reads from 'token' header

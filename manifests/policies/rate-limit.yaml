@@ -1,0 +1,29 @@
+---
+# Standard rate limit — 10 requests per second per client IP
+apiVersion: k8s.nginx.org/v1
+kind: Policy
+metadata:
+  name: rate-limit-standard
+  namespace: production
+spec:
+  rateLimit:
+    rate: 10r/s
+    key: ${binary_remote_addr}
+    zoneSize: 10m
+    rejectCode: 429
+    delay: 5         # allow burst of 5 before limiting
+
+---
+# Strict rate limit — for sensitive endpoints
+apiVersion: k8s.nginx.org/v1
+kind: Policy
+metadata:
+  name: rate-limit-strict
+  namespace: production
+spec:
+  rateLimit:
+    rate: 2r/s
+    key: ${binary_remote_addr}
+    zoneSize: 10m
+    rejectCode: 429
+    noDelay: true    # no burst — immediate limiting

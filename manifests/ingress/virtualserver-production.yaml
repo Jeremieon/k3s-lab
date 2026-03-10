@@ -4,21 +4,27 @@ metadata:
   name: fastapi-vs
   namespace: production
 spec:
-  # This hostname — add it to your /etc/hosts on your workstation
   host: fastapi.lab.local
   ingressClassName: nginx
 
-  # Upstream definitions — maps directly to NGINX upstream blocks
+  tls:
+    secret: fastapi-lab-tls
+    redirect:
+      enable: true
+      code: 301
+
+  # Policies applied at VirtualServer level affect ALL routes
+  policies:
+  - name: rate-limit-standard
+
   upstreams:
   - name: gateway
     service: gateway-service
     port: 80
-    # Active health checks — NGINX Plus only feature
     healthCheck:
       enable: true
       path: /health
       interval: 5s
-      jitter: 1s
       fails: 3
       passes: 2
 
@@ -32,7 +38,6 @@ spec:
       fails: 3
       passes: 2
 
-  # Routing rules
   routes:
   - path: /
     action:
@@ -42,7 +47,10 @@ spec:
     action:
       pass: gateway
 
+  # Stricter limit on /items — this is your "API" endpoint
   - path: /items
+    policies:
+    - name: rate-limit-strict   # overrides the VS-level policy for this route
     action:
       pass: items
 

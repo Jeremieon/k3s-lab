@@ -1,0 +1,19 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: fastapi-lab-tls
+  namespace: production
+spec:
+  secretName: fastapi-lab-tls
+  issuerRef:
+    name: lab-ca-issuer
+    kind: ClusterIssuer
+  commonName: fastapi.lab.local
+  dnsNames:
+  - fastapi.lab.local
+  - gateway.lab.local
+  - items.lab.local
+  duration: 8760h    # 1 year
+  renewBefore: 720h  # renew 30 days before expiry
+

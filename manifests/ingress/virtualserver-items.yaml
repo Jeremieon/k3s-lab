@@ -1,0 +1,30 @@
+
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: items-vs
+  namespace: production
+spec:
+  host: items.lab.local
+  ingressClassName: nginx
+  tls:
+    secret: fastapi-lab-tls
+    redirect:
+      enable: true
+      code: 301
+  policies:
+  - name: rate-limit-strict
+  upstreams:
+  - name: items
+    service: items-service
+    port: 80
+    healthCheck:
+      enable: true
+      path: /health
+      interval: 5s
+      fails: 3
+      passes: 2
+  routes:
+  - path: /
+    action:
+      pass: items
