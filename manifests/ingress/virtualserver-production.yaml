@@ -19,4 +19,3 @@ spec:
     route: production/items-route
   - path: /
     route: production/gateway-route
-
