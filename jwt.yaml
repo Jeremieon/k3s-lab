@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jwt-secret
+  namespace: production
+type: nginx.com/jwk
+stringData:
+  jwks.json: |
+    {
+      "keys": [
+        {
+          "kty": "oct",
+          "kid": "lab-key",
+          "k": "HuNfzNx9Tg_npMgjKywKusbIODHV3ntUszEIcBHHFHs",
+          "alg": "HS256",
+          "use": "sig"
+        }
+      ]
+    }
