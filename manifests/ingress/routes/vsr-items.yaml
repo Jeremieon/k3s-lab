@@ -1,0 +1,21 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServerRoute
+metadata:
+  name: items-route
+  namespace: production
+spec:
+  host: fastapi.lab.local
+  upstreams:
+  - name: items-v2
+    service: items-service-v2
+    port: 80
+    healthCheck:
+      enable: true
+      path: /health
+      interval: 5s
+      fails: 3
+      passes: 2
+  subroutes:
+  - path: /items
+    action:
+      pass: items-v2

@@ -1,0 +1,33 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServerRoute
+metadata:
+  name: gateway-route
+  namespace: production
+spec:
+  host: fastapi.lab.local
+  upstreams:
+  - name: gateway
+    service: gateway-service
+    port: 80
+    healthCheck:
+      enable: true
+      path: /health
+      interval: 5s
+      fails: 3
+      passes: 2
+  subroutes:
+  - path: /catalog
+    errorPages:
+    - codes: [502, 503, 504]
+      return:
+        code: 503
+        type: text/html
+        body: "<html><body><h1>503 - Service Unavailable</h1><p>Back shortly.</p></body></html>"
+    action:
+      pass: gateway
+  - path: /health
+    action:
+      pass: gateway
+  - path: /
+    action:
+      pass: gateway

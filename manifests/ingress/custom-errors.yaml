@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-error-pages
+  namespace: nginx-ingress
+data:
+  404.html: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>404 - Not Found</title>
+    <style>
+      body { font-family: Arial; text-align: center; padding: 50px; background: #f5f5f5; }
+      .box { background: white; padding: 40px; border-radius: 8px; display: inline-block; }
+      h1 { color: #e74c3c; } p { color: #666; }
+    </style>
+    </head>
+    <body>
+      <div class="box">
+        <h1>404</h1>
+        <p>The resource you requested was not found.</p>
+        <p><a href="/">Return to home</a></p>
+      </div>
+    </body>
+    </html>
+  503.html: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>503 - Service Unavailable</title>
+    <style>
+      body { font-family: Arial; text-align: center; padding: 50px; background: #f5f5f5; }
+      .box { background: white; padding: 40px; border-radius: 8px; display: inline-block; }
+      h1 { color: #e67e22; } p { color: #666; }
+    </style>
+    </head>
+    <body>
+      <div class="box">
+        <h1>503</h1>
+        <p>Service temporarily unavailable. We'll be back shortly.</p>
+      </div>
+    </body>
+    </html>
