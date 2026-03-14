@@ -1,0 +1,63 @@
+controller:
+  nginxplus: true
+
+  # This controller is internal-only
+  ingressClass:
+    name: nginx-internal
+    create: true
+    setAsDefaultIngress: false
+
+  image:
+    repository: private-registry.nginx.com/nginx-ic/nginx-plus-ingress
+    tag: "5.3.4"
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    name: nginx-plus-internal-sa
+    imagePullSecretName: regcred
+
+  mgmt:
+    licenseTokenSecretName: nplus-license
+
+  # Different name — completely separate controller
+  nameOverride: nginx-internal
+
+  replicaCount: 1    # internal gets 1 replica — less traffic
+
+  nginxStatus:
+    enable: true
+    port: 8080
+    allowCidrs: "0.0.0.0/0"
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+
+  service:
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+
+  config:
+    entries:
+      worker-connections: "1024"
+      keepalive-timeout: "75s"
+      upstream-keepalive-connections: "32"
+      proxy-connect-timeout: "10s"
+      proxy-read-timeout: "60s"    # longer timeout for internal/admin tools
+      proxy-send-timeout: "60s"
+      server-tokens: "off"
+      ssl-protocols: "TLSv1.2 TLSv1.3"
+      log-format: '{"time":"$time_iso8601","remote_addr":"$remote_addr","method":"$request_method","uri":"$request_uri","status":"$status","bytes_sent":"$bytes_sent","request_time":"$request_time","upstream_addr":"$upstream_addr","upstream_response_time":"$upstream_response_time","host":"$host"}'
+
+  # NodePort — lab only, no spare LB IP available
+  # In production this would be a separate LoadBalancer IP
+  service:
+    type: NodePort
+    httpPort:
+      nodePort: 30081
+    httpsPort:
+      nodePort: 30444
