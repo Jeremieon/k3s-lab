@@ -1,0 +1,37 @@
+{{- if .Values.policies.rateLimitStandard.enabled }}
+---
+apiVersion: k8s.nginx.org/v1
+kind: Policy
+metadata:
+  name: {{ .Values.policies.rateLimitStandard.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  rateLimit:
+    rate: {{ .Values.policies.rateLimitStandard.rate }}
+    key: ${binary_remote_addr}
+    zoneSize: {{ .Values.policies.rateLimitStandard.zoneSize }}
+    rejectCode: {{ .Values.policies.rateLimitStandard.rejectCode }}
+    delay: {{ .Values.policies.rateLimitStandard.delay }}
+{{- end }}
+
+{{- if .Values.policies.rateLimitStrict.enabled }}
+---
+apiVersion: k8s.nginx.org/v1
+kind: Policy
+metadata:
+  name: {{ .Values.policies.rateLimitStrict.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  rateLimit:
+    rate: {{ .Values.policies.rateLimitStrict.rate }}
+    key: ${binary_remote_addr}
+    zoneSize: {{ .Values.policies.rateLimitStrict.zoneSize }}
+    rejectCode: {{ .Values.policies.rateLimitStrict.rejectCode }}
+    noDelay: {{ .Values.policies.rateLimitStrict.noDelay }}
+{{- end }}

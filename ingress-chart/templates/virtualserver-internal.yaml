@@ -1,0 +1,37 @@
+{{- if .Values.internalVirtualServers.admin.enabled }}
+---
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: {{ .Values.internalVirtualServers.admin.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  host: {{ .Values.internalVirtualServers.admin.host }}
+  ingressClassName: {{ .Values.global.ingressClasses.internal }}
+  tls:
+    secret: {{ .Values.internalVirtualServers.admin.tlsSecret }}
+    redirect:
+      enable: true
+      code: 301
+  upstreams:
+  {{- range .Values.internalVirtualServers.admin.upstreams }}
+  - name: {{ .name }}
+    service: {{ .service }}
+    port: {{ .port }}
+    healthCheck:
+      enable: true
+      path: /health
+      interval: 10s
+      fails: 3
+      passes: 2
+  {{- end }}
+  routes:
+  {{- range .Values.internalVirtualServers.admin.routes }}
+  - path: {{ .path }}
+    action:
+      pass: {{ .upstream }}
+  {{- end }}
+{{- end }}

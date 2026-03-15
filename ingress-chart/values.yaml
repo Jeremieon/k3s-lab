@@ -1,0 +1,157 @@
+# ============================================================
+# Global settings
+# ============================================================
+global:
+  namespace: production
+  ingressClasses:
+    external: nginx-external
+    internal: nginx-internal
+
+# ============================================================
+# TLS / cert-manager
+# ============================================================
+tls:
+  enabled: true
+  issuer:
+    name: lab-ca-issuer
+    kind: ClusterIssuer
+  certificate:
+    name: fastapi-lab-tls
+    secretName: fastapi-lab-tls
+    duration: 8760h
+    renewBefore: 720h
+    dnsNames:
+      - fastapi.lab.local
+      - items.lab.local
+      - gateway.lab.local
+      - admin.lab.local
+
+# ============================================================
+# Rate limiting policies
+# ============================================================
+policies:
+  rateLimitStandard:
+    enabled: true
+    name: rate-limit-standard
+    rate: 10r/s
+    zoneSize: 10m
+    rejectCode: 429
+    delay: 5
+
+  rateLimitStrict:
+    enabled: true
+    name: rate-limit-strict
+    rate: 2r/s
+    zoneSize: 10m
+    rejectCode: 429
+    noDelay: true
+
+# ============================================================
+# External VirtualServers
+# ============================================================
+externalVirtualServers:
+
+  fastapi:
+    enabled: true
+    name: fastapi-vs
+    host: fastapi.lab.local
+    tlsSecret: fastapi-lab-tls
+    policies:
+      - rate-limit-standard
+    routes:
+      - path: /items
+        route: production/items-route
+      - path: /
+        route: production/gateway-route
+
+  items:
+    enabled: true
+    name: items-vs
+    host: items.lab.local
+    tlsSecret: fastapi-lab-tls
+    policies:
+      - rate-limit-strict
+    upstream:
+      name: items
+      service: items-service-v2
+      port: 80
+      healthCheckPath: /health
+
+  gateway:
+    enabled: true
+    name: gateway-vs
+    host: gateway.lab.local
+    tlsSecret: fastapi-lab-tls
+    policies:
+      - rate-limit-standard
+    upstream:
+      name: gateway
+      service: gateway-service
+      port: 80
+      healthCheckPath: /health
+
+# ============================================================
+# Internal VirtualServers
+# ============================================================
+internalVirtualServers:
+
+  admin:
+    enabled: true
+    name: admin-vs
+    host: admin.lab.local
+    tlsSecret: fastapi-lab-tls
+    upstreams:
+      - name: items-admin
+        service: items-service-v2
+        port: 80
+      - name: gateway-admin
+        service: gateway-service
+        port: 80
+    routes:
+      - path: /items/docs
+        upstream: items-admin
+      - path: /items/openapi.json
+        upstream: items-admin
+      - path: /gateway/docs
+        upstream: gateway-admin
+      - path: /health
+        upstream: gateway-admin
+
+# ============================================================
+# VirtualServerRoutes
+# ============================================================
+virtualServerRoutes:
+
+  items:
+    enabled: true
+    name: items-route
+    host: fastapi.lab.local
+    upstreams:
+      - name: items-v2
+        service: items-service-v2
+        port: 80
+        healthCheckPath: /health
+    subroutes:
+      - path: /items
+        upstream: items-v2
+
+  gateway:
+    enabled: true
+    name: gateway-route
+    host: fastapi.lab.local
+    upstreams:
+      - name: gateway
+        service: gateway-service
+        port: 80
+        healthCheckPath: /health
+    subroutes:
+      - path: /catalog
+        upstream: gateway
+        errorPages:
+          - codes: [502, 503, 504]
+            returnCode: 503
+            body: "<html><body><h1>503 - Service Unavailable</h1><p>Back shortly.</p></body></html>"
+      - path: /health
+        upstream: gateway
+      - path: /
+        upstream: gateway

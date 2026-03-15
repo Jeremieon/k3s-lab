@@ -1,0 +1,105 @@
+{{- if .Values.externalVirtualServers.items.enabled }}
+---
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: {{ .Values.externalVirtualServers.items.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  host: {{ .Values.externalVirtualServers.items.host }}
+  ingressClassName: {{ .Values.global.ingressClasses.external }}
+  tls:
+    secret: {{ .Values.externalVirtualServers.items.tlsSecret }}
+    redirect:
+      enable: true
+      code: 301
+  policies:
+  {{- range .Values.externalVirtualServers.items.policies }}
+  - name: {{ . }}
+  {{- end }}
+  upstreams:
+  - name: {{ .Values.externalVirtualServers.items.upstream.name }}
+    service: {{ .Values.externalVirtualServers.items.upstream.service }}
+    port: {{ .Values.externalVirtualServers.items.upstream.port }}
+    healthCheck:
+      enable: true
+      path: {{ .Values.externalVirtualServers.items.upstream.healthCheckPath }}
+      interval: 5s
+      fails: 3
+      passes: 2
+  routes:
+  - path: /
+    action:
+      pass: {{ .Values.externalVirtualServers.items.upstream.name }}
+{{- end }}
+
+{{- if .Values.externalVirtualServers.gateway.enabled }}
+---
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: {{ .Values.externalVirtualServers.gateway.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  host: {{ .Values.externalVirtualServers.gateway.host }}
+  ingressClassName: {{ .Values.global.ingressClasses.external }}
+  tls:
+    secret: {{ .Values.externalVirtualServers.gateway.tlsSecret }}
+    redirect:
+      enable: true
+      code: 301
+  policies:
+  {{- range .Values.externalVirtualServers.gateway.policies }}
+  - name: {{ . }}
+  {{- end }}
+  upstreams:
+  - name: {{ .Values.externalVirtualServers.gateway.upstream.name }}
+    service: {{ .Values.externalVirtualServers.gateway.upstream.service }}
+    port: {{ .Values.externalVirtualServers.gateway.upstream.port }}
+    healthCheck:
+      enable: true
+      path: {{ .Values.externalVirtualServers.gateway.upstream.healthCheckPath }}
+      interval: 5s
+      fails: 3
+      passes: 2
+  routes:
+  - path: /
+    action:
+      pass: {{ .Values.externalVirtualServers.gateway.upstream.name }}
+{{- end }}
+
+{{- if .Values.externalVirtualServers.fastapi.enabled }}
+---
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: {{ .Values.externalVirtualServers.fastapi.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  host: {{ .Values.externalVirtualServers.fastapi.host }}
+  ingressClassName: {{ .Values.global.ingressClasses.external }}
+  tls:
+    secret: {{ .Values.externalVirtualServers.fastapi.tlsSecret }}
+    redirect:
+      enable: true
+      code: 301
+  policies:
+  {{- range .Values.externalVirtualServers.fastapi.policies }}
+  - name: {{ . }}
+  {{- end }}
+  upstreams: []
+  routes:
+  {{- range .Values.externalVirtualServers.fastapi.routes }}
+  - path: {{ .path }}
+    route: {{ .route }}
+  {{- end }}
+{{- end }}

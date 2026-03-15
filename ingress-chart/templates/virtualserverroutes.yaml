@@ -1,0 +1,46 @@
+{{- range $key, $vsr := .Values.virtualServerRoutes }}
+{{- if $vsr.enabled }}
+---
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServerRoute
+metadata:
+  name: {{ $vsr.name }}
+  namespace: {{ $.Values.global.namespace }}
+  labels:
+    helm.sh/chart: {{ $.Chart.Name }}-{{ $.Chart.Version }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  host: {{ $vsr.host }}
+  upstreams:
+  {{- range $vsr.upstreams }}
+  - name: {{ .name }}
+    service: {{ .service }}
+    port: {{ .port }}
+    healthCheck:
+      enable: true
+      path: {{ .healthCheckPath }}
+      interval: 5s
+      fails: 3
+      passes: 2
+  {{- end }}
+  subroutes:
+  {{- range $vsr.subroutes }}
+  - path: {{ .path }}
+    {{- if .errorPages }}
+    errorPages:
+    {{- range .errorPages }}
+    - codes:
+      {{- range .codes }}
+      - {{ . | int }}
+      {{- end }}
+      return:
+        code: {{ .returnCode | int }}
+        type: text/html
+        body: {{ .body | quote }}
+    {{- end }}
+    {{- end }}
+    action:
+      pass: {{ .upstream }}
+  {{- end }}
+{{- end }}
+{{- end }}
