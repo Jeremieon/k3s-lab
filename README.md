@@ -1,20 +1,36 @@
 # K3s Lab — FastAPI Microservices on Kubernetes
 
-## Architecture
+## Current Architecture
 ```
-Client
-  │
-  ▼
-[Phase 2: NGINX Ingress Controller]  ← coming next
-  │
-  ├──► gateway-service (ClusterIP)
-  │         │
-  │         └──► items-service (ClusterIP)
-  │
-[Phase 5: BIG-IP VE + F5 CIS]        ← coming later
+Client (Browser / curl)
+        │
+        │ HTTPS (TLS via cert-manager)
+        ▼
+┌─────────────────────────────────────┐
+│  NGINX Plus Ingress Controller      │
+│  External (nginx-external)          │
+│  IP: 192.168.0.55/56                │
+│  Rate limiting, Active health checks│
+│  Live dashboard: node:30080         │
+└─────────────────────────────────────┘
+        │
+        ├── fastapi.lab.local/items   → items-service-v2 (via VirtualServerRoute)
+        ├── fastapi.lab.local/catalog → gateway-service  (via VirtualServerRoute)
+        ├── items.lab.local           → items-service-v2
+        └── gateway.lab.local         → gateway-service
+                                              │
+                                              └──► items-service-v2
+
+┌─────────────────────────────────────┐
+│  NGINX Plus Ingress Controller      │
+│  Internal (nginx-internal)          │
+│  NodePort: 192.168.0.X:30444        │
+└─────────────────────────────────────┘
+        │
+        └── admin.lab.local           → gateway/items swagger docs
 ```
 
-## Cluster
+## Cluster Nodes
 
 | Node | Role | IP |
 |---|---|---|
@@ -22,50 +38,61 @@ Client
 | jeremyk3swrk | worker | 192.168.0.55 |
 | jeremyk3swrk2 | worker | 192.168.0.56 |
 
-## Environments
+## Helm Releases
 
-| Environment | Namespace | Replicas | Log Level |
+| Release | Namespace | Chart | Purpose |
 |---|---|---|---|
-| dev | dev | 1 | debug |
-| staging | staging | 1 | info |
-| production | production | 2 | info |
+| nginx-plus | nginx-ingress | nginx-ingress 2.4.4 | External NGINX Plus IC |
+| nginx-internal | nginx-ingress | nginx-ingress 2.4.4 | Internal NGINX Plus IC |
+| cert-manager | cert-manager | cert-manager | TLS certificate automation |
+| fastapi-production | production | fastapi-chart | Application (production) |
+| fastapi-dev | dev | fastapi-chart | Application (dev) |
+| fastapi-staging | staging | fastapi-chart | Application (staging) |
+| ingress-release | production | ingress-chart | Ingress routing config |
+
+## Hostnames
+
+| Hostname | Controller | Purpose |
+|---|---|---|
+| fastapi.lab.local | external | Main entry — path routing to all services |
+| items.lab.local | external | Direct items-service access |
+| gateway.lab.local | external | Direct gateway-service access |
+| admin.lab.local:30444 | internal | Admin/swagger docs (internal only) |
 
 ## Services
 
-### items-service
-- Owns item data
+### items-service (v2.0.0)
+- 7 items in catalogue
 - Endpoints: `GET /health` `GET /items` `GET /items/{id}` `GET /version`
+- Image: YOURDOCKERHUBUSERNAME/items-service:2.0.0
 
-### gateway-service
-- API gateway — calls items-service upstream
+### gateway-service (v1.0.0)
+- Calls items-service upstream
 - Endpoints: `GET /health` `GET /catalog` `GET /catalog/{id}` `GET /health/upstream`
+- Image: YOURDOCKERHUBUSERNAME/gateway-service:1.0.0
 
-## Deploy
+## Quick Commands
 ```bash
-# Install
-helm install fastapi-production fastapi-chart/ \
-  --namespace production \
-  -f helm-values/values-production.yaml
-
-# Upgrade (new image version)
+# Deploy application
 helm upgrade fastapi-production fastapi-chart/ \
-  --namespace production \
-  -f helm-values/values-production.yaml \
-  --set itemsService.image.tag=2.0.0
+  -n production -f helm-values/values-production.yaml
 
-# Rollback
-helm rollback fastapi-production 1 -n production
+# Deploy ingress config
+helm upgrade ingress-release ingress-chart/ -n production
 
-# Diff before upgrade
-helm diff upgrade fastapi-production fastapi-chart/ \
-  --namespace production \
-  -f helm-values/values-production.yaml
+# Check everything
+kubectl get pods -A | grep -v Running
+kubectl get virtualserver -n production
+helm list -A
+
+# Test routing
+curl -sk https://fastapi.lab.local/catalog
 ```
 
 ## Roadmap
 
 - [x] Phase 1 — Foundations (K3s, kubectl, Deployments, Helm)
-- [ ] Phase 2 — NGINX Ingress Controller
+- [x] Phase 2 — NGINX Plus Ingress Controller
 - [ ] Phase 3 — CI/CD (GitHub Actions + ArgoCD)
 - [ ] Phase 4 — Observability (Prometheus + Grafana + Loki)
 - [ ] Phase 5 — F5 CIS + BIG-IP VE
