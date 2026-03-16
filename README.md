@@ -64,12 +64,12 @@ Client (Browser / curl)
 ### items-service (v2.0.0)
 - 7 items in catalogue
 - Endpoints: `GET /health` `GET /items` `GET /items/{id}` `GET /version`
-- Image: YOURDOCKERHUBUSERNAME/items-service:2.0.0
+- Image: jeremy9k/items-service:2.0.0
 
 ### gateway-service (v1.0.0)
 - Calls items-service upstream
 - Endpoints: `GET /health` `GET /catalog` `GET /catalog/{id}` `GET /health/upstream`
-- Image: YOURDOCKERHUBUSERNAME/gateway-service:1.0.0
+- Image: jeremy9k/gateway-service:1.0.0
 
 ## Quick Commands
 ```bash
