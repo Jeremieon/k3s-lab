@@ -1,0 +1,22 @@
+# ArgoCD Application — populated on Day 15
+# Manages: ingress-release Helm release
+# Source: ingress-chart/
+# Target: production namespace
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-production
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOURUSERNAME/k3s-lab.git
+    targetRevision: main
+    path: ingress-chart
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
