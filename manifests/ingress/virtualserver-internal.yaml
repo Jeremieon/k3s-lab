@@ -1,0 +1,58 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: admin-vs
+  namespace: production
+spec:
+  host: admin.lab.local
+  # Uses internal IngressClass — only internal controller picks this up
+  ingressClassName: nginx-internal
+
+  tls:
+    secret: fastapi-lab-tls
+    redirect:
+      enable: true
+      code: 301
+
+  upstreams:
+  - name: items-admin
+    service: items-service-v2
+    port: 80
+    healthCheck:
+      enable: true
+      path: /health
+      interval: 10s
+      fails: 3
+      passes: 2
+
+  - name: gateway-admin
+    service: gateway-service
+    port: 80
+    healthCheck:
+      enable: true
+      path: /health
+      interval: 10s
+      fails: 3
+      passes: 2
+
+  routes:
+  # Internal admin routes — Swagger docs, version info
+  - path: /items/docs
+    action:
+      pass: items-admin
+
+  - path: /items/openapi.json
+    action:
+      pass: items-admin
+
+  - path: /gateway/docs
+    action:
+      pass: gateway-admin
+
+  - path: /gateway/openapi.json
+    action:
+      pass: gateway-admin
+
+  - path: /health
+    action:
+      pass: gateway-admin

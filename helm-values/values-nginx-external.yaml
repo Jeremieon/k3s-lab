@@ -1,0 +1,58 @@
+controller:
+  nginxplus: true
+
+  # This controller is the external-facing one
+  ingressClass:
+    name: nginx-external
+    create: true
+    setAsDefaultIngress: false   # not default anymore — must be explicit
+
+  image:
+    repository: private-registry.nginx.com/nginx-ic/nginx-plus-ingress
+    tag: "5.3.4"
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    name: nginx-plus-external-sa
+    imagePullSecretName: regcred
+
+  mgmt:
+    licenseTokenSecretName: nplus-license
+
+  # Unique name so it doesn't conflict with internal controller
+  nameOverride: nginx-external
+
+  replicaCount: 2
+
+  nginxStatus:
+    enable: true
+    port: 8080
+    allowCidrs: "0.0.0.0/0"
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  service:
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+    annotations:
+      # Label so MetalLB/klipper knows this is external
+      service.beta.kubernetes.io/external-traffic: "external"
+
+  config:
+    entries:
+      worker-connections: "4096"
+      keepalive-timeout: "75s"
+      upstream-keepalive-connections: "64"
+      upstream-keepalive-time: "1h"
+      proxy-connect-timeout: "10s"
+      proxy-read-timeout: "30s"
+      proxy-send-timeout: "30s"
+      server-tokens: "off"
+      ssl-protocols: "TLSv1.2 TLSv1.3"
+      log-format: '{"time":"$time_iso8601","remote_addr":"$remote_addr","method":"$request_method","uri":"$request_uri","status":"$status","bytes_sent":"$bytes_sent","request_time":"$request_time","upstream_addr":"$upstream_addr","upstream_response_time":"$upstream_response_time","host":"$host"}'

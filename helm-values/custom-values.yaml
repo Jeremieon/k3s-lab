@@ -1,0 +1,13 @@
+controller:
+  config:
+    entries:
+      worker-connections: "4096"
+      keepalive-timeout: "75s"
+      upstream-keepalive-connections: "64"
+      upstream-keepalive-time: "1h"
+      proxy-connect-timeout: "10s"
+      proxy-read-timeout: "30s"
+      proxy-send-timeout: "30s"
+      server-tokens: "off"
+      ssl-protocols: "TLSv1.2 TLSv1.3"
+      log-format: '{"time":"$time_iso8601","remote_addr":"$remote_addr","method":"$request_method","uri":"$request_uri","status":"$status","bytes_sent":"$bytes_sent","request_time":"$request_time","upstream_addr":"$upstream_addr","upstream_response_time":"$upstream_response_time","host":"$host"}'
