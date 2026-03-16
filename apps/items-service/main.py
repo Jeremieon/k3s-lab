@@ -6,7 +6,10 @@ import socket
 app = FastAPI(
     title="Items Service",
     description="Manages items inventory",
-    version="2.0.0"
+    version="2.0.0",
+    openapi_url="/items/openapi.json",
+    docs_url="/items/docs",
+    redoc_url="/items/redoc",
 )
 
 ITEMS = [

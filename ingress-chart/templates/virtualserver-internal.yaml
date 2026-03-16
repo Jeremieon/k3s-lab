@@ -5,9 +5,6 @@ kind: VirtualServer
 metadata:
   name: {{ .Values.internalVirtualServers.admin.name }}
   namespace: {{ .Values.global.namespace }}
-  labels:
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   host: {{ .Values.internalVirtualServers.admin.host }}
   ingressClassName: {{ .Values.global.ingressClasses.internal }}
@@ -29,9 +26,13 @@ spec:
       passes: 2
   {{- end }}
   routes:
-  {{- range .Values.internalVirtualServers.admin.routes }}
-  - path: {{ .path }}
+  - path: /items
     action:
-      pass: {{ .upstream }}
-  {{- end }}
+      pass: items-admin
+  - path: /gateway
+    action:
+      pass: gateway-admin
+  - path: /health
+    action:
+      pass: gateway-admin
 {{- end }}

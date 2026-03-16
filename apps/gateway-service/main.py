@@ -6,8 +6,10 @@ import socket
 
 app = FastAPI(
     title="Gateway Service",
-    description="API Gateway — aggregates data from upstream services",
-    version="1.0.0"
+    description="API Gateway",
+    version="1.0.0",
+    openapi_url="/gateway/openapi.json",
+    docs_url="/gateway/docs",
 )
 
 # This is the Kubernetes DNS name for items-service
