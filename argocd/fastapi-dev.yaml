@@ -9,7 +9,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/YOURUSERNAME/k3s-lab.git
+    repoURL: https://github.com/Jeremieon/k3s-lab.git
     targetRevision: main
     path: fastapi-chart
     helm:
