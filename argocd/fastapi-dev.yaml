@@ -1,20 +1,23 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ingress-production
+  name: fastapi-dev
   namespace: argocd
   labels:
-    environment: production
+    environment: dev
     team: platform
 spec:
   project: default
   source:
-    repoURL: https://github.com/Jeremieon/k3s-lab.git
+    repoURL: https://github.com/YOURUSERNAME/k3s-lab.git
     targetRevision: main
-    path: ingress-chart
+    path: fastapi-chart
+    helm:
+      valueFiles:
+        - ../helm-values/values-dev.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: production
+    namespace: dev
   syncPolicy:
     automated:
       prune: true

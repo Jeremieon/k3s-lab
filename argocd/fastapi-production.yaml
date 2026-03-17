@@ -1,16 +1,15 @@
-# ArgoCD Application — populated on Day 15
-# Manages: fastapi-production Helm release
-# Source: fastapi-chart/ + helm-values/values-production.yaml
-# Target: production namespace
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: fastapi-production
   namespace: argocd
+  labels:
+    environment: production
+    team: platform
 spec:
   project: default
   source:
-    repoURL: https://github.com/YOURUSERNAME/k3s-lab.git
+    repoURL: https://github.com/Jeremieon/k3s-lab.git
     targetRevision: main
     path: fastapi-chart
     helm:
@@ -23,3 +22,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
