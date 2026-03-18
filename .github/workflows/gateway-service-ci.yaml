@@ -1,4 +1,5 @@
-name: Gateway Service CI/CD
+
+# name: Gateway Service CI/CD
 
 on:
   push:
