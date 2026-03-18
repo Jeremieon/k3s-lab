@@ -1,0 +1,119 @@
+name: Gateway Service CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/gateway-service/**'
+      - '.github/workflows/gateway-service-ci.yaml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/gateway-service/**'
+
+env:
+  SERVICE_NAME: gateway-service
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/gateway-service
+
+jobs:
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/gateway-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: apps/gateway-service/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Run tests
+        run: python3 -m pytest tests/ -v --tb=short
+
+  build-push:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate image tag
+        id: meta
+        run: |
+          TAG=$(date +%Y%m%d-%H%M%S)-$(echo ${{ github.sha }} | cut -c1-7)
+          echo "version=$TAG" >> $GITHUB_OUTPUT
+          echo "Image tag: $TAG"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: apps/gateway-service
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+            ${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  update-image-tag:
+    name: Update Image Tag
+    runs-on: ubuntu-latest
+    needs: build-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Update image tag in values-production.yaml
+        run: |
+          NEW_TAG="${{ needs.build-push.outputs.image_tag }}"
+          echo "Updating gateway-service image tag to: $NEW_TAG"
+          sed -i "s/tag: \".*\"/tag: \"$NEW_TAG\"/" helm-values/values-production.yaml
+          grep "tag:" helm-values/values-production.yaml
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add helm-values/values-production.yaml
+          git diff --staged --quiet || \
+            git commit -m "ci: update gateway-service image tag to ${{ needs.build-push.outputs.image_tag }}
+
+          Automated commit by GitHub Actions
+          Workflow: ${{ github.workflow }}
+          Triggered by: ${{ github.actor }}"
+          git push
