@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from datetime import datetime
+from datetime import datetime, timezone
 import httpx
 import os
 import socket
@@ -23,7 +23,7 @@ ITEMS_SERVICE_URL = os.getenv(
 def health():
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "pod": socket.gethostname()
     }
 
@@ -58,7 +58,7 @@ def get_catalog(category: str = None):
             "gateway_pod": socket.gethostname(),
             "items_service_pod": upstream_data.get("served_by"),
             "environment": os.getenv("ENVIRONMENT", "unknown"),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "catalog": upstream_data["items"],
             "total": upstream_data["count"]
         }

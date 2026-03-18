@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import socket
 
@@ -26,7 +26,7 @@ ITEMS = [
 def health():
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "pod": socket.gethostname(),
         "version": "2.0.0"
     }
