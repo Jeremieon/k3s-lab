@@ -1,3 +1,4 @@
+#pipe
 name: Items Service CI/CD
 
 on:
@@ -116,9 +117,12 @@ jobs:
           grep "tag:" helm-values/values-production.yaml
 
       - name: Commit and push
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/Jeremieon/k3s-lab.git
           git add helm-values/values-production.yaml
           git diff --staged --quiet || \
             git commit -m "ci: update items-service image tag to ${{ needs.build-push.outputs.image_tag }}
