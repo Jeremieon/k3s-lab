@@ -4,14 +4,14 @@ global:
 itemsService:
   replicaCount: 2
   image:
-    tag: "2.0.2"
+    tag: "20260318-223956-95a4828"
   config:
     LOG_LEVEL: "info"
 
 gatewayService:
   replicaCount: 2
   image:
-    tag: "1.0.1"
+    tag: "20260318-223956-95a4828"
   config:
     LOG_LEVEL: "info"
     TIMEOUT_SECONDS: "5"
