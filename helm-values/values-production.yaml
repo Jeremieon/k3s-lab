@@ -4,7 +4,7 @@ global:
 itemsService:
   replicaCount: 2
   image:
-    tag: "20260318-223956-95a4828"
+    tag: "latest"
   config:
     LOG_LEVEL: "info"
 
