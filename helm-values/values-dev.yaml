@@ -9,7 +9,7 @@ itemsService:
 gatewayService:
   replicaCount: 1
   image:
-    tag: "1.0.0"
+    tag: "20260321-232309-9714fab"
   config:
     LOG_LEVEL: "debug"
     TIMEOUT_SECONDS: "10"
