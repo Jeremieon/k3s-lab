@@ -9,7 +9,7 @@ itemsService:
 gatewayService:
   replicaCount: 2
   image:
-    tag: "latest"
+    tag: "20260321-232900-81d2e6f"
   config:
     LOG_LEVEL: "info"
     TIMEOUT_SECONDS: "5"
