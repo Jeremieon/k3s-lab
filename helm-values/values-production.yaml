@@ -1,13 +1,11 @@
 global:
   environment: production
-
 itemsService:
   replicaCount: 2
   image:
-    tag: "latest"
+    tag: "20260321-214707-c852ec9"
   config:
     LOG_LEVEL: "info"
-
 gatewayService:
   replicaCount: 2
   image:
