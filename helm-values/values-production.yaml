@@ -3,7 +3,7 @@ global:
 itemsService:
   replicaCount: 2
   image:
-    tag: "20260321-223850-d1a320b"
+    tag: "20260321-231358-b2550d7"
   config:
     LOG_LEVEL: "info"
 gatewayService:
