@@ -107,3 +107,4 @@ def upstream_health():
             "error": str(e),
             "items_service_url": ITEMS_SERVICE_URL
         }
+# trigger gateway ci
