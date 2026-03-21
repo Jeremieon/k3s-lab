@@ -1,13 +1,11 @@
 global:
   environment: dev
-
 itemsService:
   replicaCount: 1
   image:
-    tag: "1.0.0"
+    tag: "20260321-222122-44f043b"
   config:
     LOG_LEVEL: "debug"
-
 gatewayService:
   replicaCount: 1
   image:
