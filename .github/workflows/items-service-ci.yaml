@@ -54,7 +54,7 @@ jobs:
     name: Build & Push Image
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
 
     outputs:
       image_tag: ${{ steps.meta.outputs.version }}
