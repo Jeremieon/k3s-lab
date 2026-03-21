@@ -3,7 +3,7 @@
 
 on:
   push:
-    branches: [main]
+    branches: [develop, main]
     paths:
       - 'apps/gateway-service/**'
       - '.github/workflows/gateway-service-ci.yaml'

@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Jeremieon/k3s-lab.git
-    targetRevision: main
+    targetRevision: main      
     path: fastapi-chart
     helm:
       valueFiles:
