@@ -194,4 +194,5 @@ jobs:
           git add helm-values/values-dev.yaml
           git diff --staged --quiet && echo "No changes" && exit 0
           git commit -m "ci: update dev items-service tag to ${{ needs.build-push.outputs.image_tag }}"
+          git pull --rebase origin develop
           git push
